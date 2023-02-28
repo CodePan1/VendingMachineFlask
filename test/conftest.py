@@ -1,12 +1,14 @@
+"""This module contains pytest fixtures and configuration for the tests."""
+
 import pytest
 
-from app import app, db
-
+from src.app import app, db
 
 
 @pytest.fixture
-def client():
-    app.config['TESTING'] = True
+def client() -> app.test_client:
+    """Return a test client for the Flask application."""
+    app.config["TESTING"] = True
     client = app.test_client()
 
     with app.app_context():
