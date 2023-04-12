@@ -14,43 +14,42 @@ from .models import Product, VendingMachine
 routes = Blueprint("routes", __name__)
 
 
-def get_required_fields_for_request(request_method):
-    required_fields_of_requests = {
-        "POST": {"name", "price", "quantity", "vending_machine_id"},
-        "PUT": {"id"},
-        "DELETE": {"id"},
-    }
-    return required_fields_of_requests.get(request_method, set())
+# Product routes
+@routes.route("/product", methods=["POST"])
+def create_product_route():
+    data = request.get_json()
+    return create_product(data)
 
 
-def get_method_to_function_map(api_functions):
-    return {
-        "POST": api_functions[0],
-        "PUT": api_functions[1],
-        "DELETE": api_functions[2],
-    }
+@routes.route("/product", methods=["PUT"])
+def update_product_route():
+    data = request.get_json()
+    return update_product(data)
 
 
-def is_valid_fields(data, required_fields):
-    return bool(data) and required_fields <= data.keys()
+@routes.route("/product", methods=["DELETE"])
+def delete_product_route():
+    data = request.get_json()
+    return delete_product(data)
 
 
-def make_error_response(status_code):
-    return make_response(jsonify({"status": "Bad Request"}), status_code)
+# Vending machine routes
+@routes.route("/vending_machine", methods=["POST"])
+def create_vending_machine_route():
+    data = request.get_json()
+    return create_vending_machine(data)
 
 
-def make_success_response(status_code):
-    return make_response(jsonify({"status": "Success"}), status_code)
+@routes.route("/vending_machine", methods=["PUT"])
+def update_vending_machine_route():
+    data = request.get_json()
+    return update_vending_machine(data)
 
 
-def list_objects(model_class):
-    objects = model_class.query.all()
-    return jsonify({model_class.__name__.lower(): objects})
-
-
-def modify_object(data, required_fields, method_to_function_map):
-    if not is_valid_fields(data, required_fields):
-        return {"status": "Bad Request"}, 400
+@routes.route("/vending_machine", methods=["DELETE"])
+def delete_vending_machine_route():
+    data = request.get_json()
+    return delete_vending_machine(data)
 
     api_function = method_to_function_map.get(request.method)
     if api_function is None:
