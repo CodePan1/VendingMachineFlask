@@ -1,137 +1,122 @@
-"""This module contains tests for the `Stock` class."""
+from decimal import Decimal
 
-import json
-from typing import Callable
+import pytest
 
-from src.app import Machine, Stock, db
+from src import create_app, db
+from src.api.product_api import create_product, delete_product, update_product
+from src.api.vending_machine_api import (
+    create_vending_machine,
+    delete_vending_machine,
+    update_vending_machine,
+)
+from src.models import VendingMachine
+from src.models.product import Product
 
 
-def test_add_stock_to_existing_machine(client: Callable) -> None:
-    """Test creating a new Stock to a vending machine."""
-    machine = Machine(name="Vending Machine 1", location="123 Main St.")
-    db.session.add(machine)
-    db.session.commit()
+@pytest.fixture
+def test_app():
+    app = create_app()
+    app.config["TESTING"] = True
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # send a POST request to add stock to the machine
-    stock_items = {
-        "items": [
-            {"product_name": "Cola", "quantity": 10},
-            {"product_name": "Chips", "quantity": 5},
-            {"product_name": "Candy", "quantity": 12},
-        ]
+    with app.app_context():
+        db.create_all()
+        yield app.test_client()
+        db.session.remove()
+        db.drop_all()
+
+
+@pytest.fixture
+def test_vm(test_app):
+    new_vm_data = {
+        "name": "Test Vending Machine",
+        "location": "Test Location",
     }
-    STOCK_ADD_URL = "/add/stock/1"
-    response = client.post(
-        STOCK_ADD_URL,
-        data=json.dumps(stock_items),
-        content_type="application/json",
-    )
-
-    assert response.status_code == 200
-    assert b"Stock added successfully" in response.data
-
-    # check that the stock items were added to the database
-    stock_items = Stock.query.filter_by(machine_id=machine.id).all()
-    assert len(stock_items) == 3
-    assert stock_items[0].product_name == "Cola"
-    assert stock_items[0].quantity == 10
-    assert stock_items[1].product_name == "Chips"
-    assert stock_items[1].quantity == 5
-    assert stock_items[2].product_name == "Candy"
-    assert stock_items[2].quantity == 12
+    status, status_code = create_vending_machine(new_vm_data)
+    assert status_code == 200
+    assert status["status"] == "OK"
+    assert VendingMachine.query.count() == 1
+    new_vm = VendingMachine.query.first()
+    yield new_vm
+    delete_vending_machine({"id": new_vm.id})
 
 
-def test_add_stock_to_nonexistent_machine(client: Callable) -> None:
-    """Test creating a new Stock to a nonexistent vending machine."""
-    stock_items = {
-        "items": [
-            {"product_name": "Cola", "quantity": 10},
-            {"product_name": "Chips", "quantity": 5},
-            {"product_name": "Candy", "quantity": 12},
-        ]
+def test_create_product(test_app, test_vm):
+    data = {
+        "name": "Test Product",
+        "price": Decimal("1.99"),
+        "quantity": 10,
+        "vending_machine_id": test_vm.id,
     }
-    STOCK_ADD_URL = "/add/stock/1"
-    response = client.post(
-        STOCK_ADD_URL,
-        data=json.dumps(stock_items),
-        content_type="application/json",
-    )
-
-    assert response.status_code == 200
-    assert b"Machine with id 1 not found" in response.data
-
-    # check that no stock items were added to the database
-    stock_items = Stock.query.all()
-    assert len(stock_items) == 0
+    status, status_code = create_product(data)
+    assert status_code == 200
+    assert status["status"] == "OK"
+    assert Product.query.count() == 1
+    new_product = Product.query.first()
+    assert new_product.name == "Test Product"
+    assert new_product.price == Decimal("1.99")
+    assert new_product.quantity == 10
+    assert new_product.vending_machine_id == test_vm.id
 
 
-def test_edit_stock(client: Callable) -> None:
-    """Test editing a stock."""
-    # create a new Stock instance
-    stock_item = Stock(machine_id=1, product_name="Cola", quantity=10)
-    db.session.add(stock_item)
-    db.session.commit()
+def test_update_product(test_app, test_vm):
+    new_product_data = {
+        "name": "Test Product",
+        "price": 1.99,
+        "quantity": 10,
+        "vending_machine_id": test_vm.id,
+    }
+    status, status_code = create_product(new_product_data)
+    assert status_code == 200
+    assert status["status"] == "OK"
+    assert Product.query.count() == 1
+    new_product = Product.query.first()
 
-    # send a PUT request to update the quantity of the stock item
-    new_quantity = 5
-    response = client.put(
-        f"/edit/stock/{stock_item.id}",
-        data=json.dumps({"quantity": new_quantity}),
-        content_type="application/json",
-    )
+    updated_product_data = {
+        "id": new_product.id,
+        "name": "Updated Product",
+        "price": Decimal("2.99"),  # convert to Decimal
+        "quantity": 20,
+        "vending_machine_id": test_vm.id,
+    }
+    status, status_code = update_product(updated_product_data)
+    assert status_code == 200
+    assert status["status"] == "OK"
 
-    assert response.status_code == 200
-    assert b"Stock item with id 1 updated successfully" in response.data
+    updated_product = db.session.get(Product, new_product.id)
+    assert updated_product.name == "Updated Product"
+    assert updated_product.price == Decimal("2.99")  # compare as Decimal
+    assert updated_product.quantity == 20
 
-    # check that the quantity of the stock item was updated in the database
-    stock_item = Stock.query.get(1)
-    assert stock_item.quantity == new_quantity
-
-
-def test_edit_nonexistent_stock(client: Callable) -> None:
-    """Test editing a stock to nonexistent stock."""
-    # send a PUT request to update a nonexistent stock item
-    new_quantity = 5
-    response = client.put(
-        "/edit/stock/1",
-        data=json.dumps({"quantity": new_quantity}),
-        content_type="application/json",
-    )
-
-    assert response.status_code == 200
-    assert b"Stock item with id 1 not found" in response.data
-
-    # check that no stock items were updated in the database
-    stock_items = Stock.query.all()
-    assert len(stock_items) == 0
+    # Test invalid product ID
+    updated_product_data["id"] = -1
+    status, status_code = update_product(updated_product_data)
+    assert status_code == 400
+    assert status["status"] == "Bad Request"
 
 
-def test_delete_existing_stock(client: Callable) -> None:
-    """Test deleting a stock."""
-    # create a new Stock instance
-    stock_item = Stock(machine_id=1, product_name="Cola", quantity=10)
-    db.session.add(stock_item)
-    db.session.commit()
+def test_delete_product(test_app, test_vm):
+    new_product_data = {
+        "name": "Test Product",
+        "price": 1.99,
+        "quantity": 10,
+        "vending_machine_id": test_vm.id,
+    }
+    status, status_code = create_product(new_product_data)
+    assert status_code == 200
+    assert status["status"] == "OK"
+    assert Product.query.count() == 1
+    new_product = Product.query.first()
 
-    # send a DELETE request to delete the stock item
-    response = client.delete("/delete/stock/1")
+    data = {"id": new_product.id}
+    status, status_code = delete_product(data)
+    assert status_code == 200
+    assert status["status"] == "OK"
+    assert Product.query.count() == 0
 
-    assert response.status_code == 200
-    assert b"Stock item with id 1 deleted successfully" in response.data
-
-    # check that the stock item was deleted from the database
-    stock_items = Stock.query.all()
-    assert len(stock_items) == 0
-
-
-def test_delete_nonexistent_stock(client: Callable) -> None:
-    """Test deleting a nonexistent stock."""
-    # send a DELETE request to delete a nonexistent stock item
-    response = client.delete("/delete/stock/1")
-
-    assert response.status_code == 200
-    assert b"Stock item with id 1 not found" in response.data
-
-    # check that no stock items were deleted from the database
-    stock_items = Stock.query.all()
-    assert len(stock_items) == 0
+    # Test invalid product ID
+    data["id"] = -1
+    status, status_code = delete_product(data)
+    assert status_code == 400
+    assert status["status"] == "Bad Request"
