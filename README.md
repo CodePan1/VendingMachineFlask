@@ -8,3 +8,9 @@ This is a API for managing vending machines and their products. It provides CRUD
 - Manage products (create, read, update, delete)
 - View product stock timelines
 - View vending machine stock timelines
+
+## API Endpoints
+
+### VendingMachine
+POST /vending_machine - Create a new vending machine
+Request body: {"name": "<vending_machine_name>", "location": "<vending_machine_location>"}
