@@ -12,6 +12,4 @@ class VendingMachine(db.Model):
     id: int = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name: str = db.Column(db.String(100))
     location: str = db.Column(db.Text)
-    products: List[Product] = db.relationship(
-        "Product", backref="vending_machine", cascade="all, delete-orphan"
-    )
+    products: List[Product] = db.relationship("Product", backref="vending_machine", cascade="all, delete-orphan")

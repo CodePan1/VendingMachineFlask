@@ -4,11 +4,7 @@ from flask import jsonify, request
 from flask.helpers import make_response
 
 from .api.product_api import create_product, delete_product, update_product
-from .api.vending_machine_api import (
-    create_vending_machine,
-    delete_vending_machine,
-    update_vending_machine,
-)
+from .api.vending_machine_api import create_vending_machine, delete_vending_machine, update_vending_machine
 from .models import Product, VendingMachine
 
 routes = Blueprint("routes", __name__)
@@ -89,7 +85,5 @@ def list_products():
 @routes.route("/product", methods=["POST", "PUT", "DELETE"])
 def modify_product():
     required_fields = get_required_fields_for_request(request.method)
-    method_to_function_map = get_method_to_function_map(
-        (create_product, update_product, delete_product)
-    )
+    method_to_function_map = get_method_to_function_map((create_product, update_product, delete_product))
     return modify_object(request.get_json(), required_fields, method_to_function_map)

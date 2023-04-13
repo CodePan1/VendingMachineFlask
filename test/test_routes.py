@@ -39,31 +39,23 @@ class TestRoutes(unittest.TestCase):
             "quantity": 10,
             "vending_machine_id": 1,
         }
-        response = test_client.post(
-            "/product", data=json.dumps(data), content_type="application/json"
-        )
+        response = test_client.post("/product", data=json.dumps(data), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
         # Test product deletion
         data = {"id": 1}
-        response = test_client.delete(
-            "/product", data=json.dumps(data), content_type="application/json"
-        )
+        response = test_client.delete("/product", data=json.dumps(data), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
     def test_create_and_delete_vending_machine(self):
         # Test vending machine creation
         data = {"name": "Test Vending Machine", "location": "Test Location"}
-        response = test_client.post(
-            "/vending_machine", data=json.dumps(data), content_type="application/json"
-        )
+        response = test_client.post("/vending_machine", data=json.dumps(data), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
         # Test vending machine deletion
         data = {"id": 1}
-        response = test_client.delete(
-            "/vending_machine", data=json.dumps(data), content_type="application/json"
-        )
+        response = test_client.delete("/vending_machine", data=json.dumps(data), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
     def test_update_product(self):
@@ -74,9 +66,7 @@ class TestRoutes(unittest.TestCase):
             "quantity": 10,
             "vending_machine_id": 1,
         }
-        test_client.post(
-            "/product", data=json.dumps(data), content_type="application/json"
-        )
+        test_client.post("/product", data=json.dumps(data), content_type="application/json")
 
         # Test product update
         data = {
@@ -86,17 +76,13 @@ class TestRoutes(unittest.TestCase):
             "quantity": 5,
             "vending_machine_id": 2,
         }
-        response = test_client.put(
-            "/product", data=json.dumps(data), content_type="application/json"
-        )
+        response = test_client.put("/product", data=json.dumps(data), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
     def test_update_vending_machine(self):
         # Create a vending machine to update
         data = {"name": "Test Vending Machine", "location": "Test Location"}
-        test_client.post(
-            "/vending_machine", data=json.dumps(data), content_type="application/json"
-        )
+        test_client.post("/vending_machine", data=json.dumps(data), content_type="application/json")
 
         # Test vending machine update
         data = {
@@ -104,7 +90,5 @@ class TestRoutes(unittest.TestCase):
             "name": "Updated Test Vending Machine",
             "location": "Updated Test Location",
         }
-        response = test_client.put(
-            "/vending_machine", data=json.dumps(data), content_type="application/json"
-        )
+        response = test_client.put("/vending_machine", data=json.dumps(data), content_type="application/json")
         self.assertEqual(response.status_code, 200)
