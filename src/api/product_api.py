@@ -15,9 +15,7 @@ def create_product(data):
         data.get("quantity"),
         data.get("vending_machine_id"),
     )
-    product = Product(
-        name=name, price=price, quantity=quantity, vending_machine_id=vm_id
-    )
+    product = Product(name=name, price=price, quantity=quantity, vending_machine_id=vm_id)
     db.session.add(product)
     db.session.commit()
     return OK_RESPONSE

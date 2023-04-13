@@ -1,11 +1,7 @@
 import pytest
 
 from src import create_app, db
-from src.api.vending_machine_api import (
-    create_vending_machine,
-    delete_vending_machine,
-    update_vending_machine,
-)
+from src.api.vending_machine_api import create_vending_machine, delete_vending_machine, update_vending_machine
 from src.models.vending_machine import VendingMachine
 
 

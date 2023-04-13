@@ -10,6 +10,4 @@ class Product(db.Model):
     name: str = db.Column(db.String(100))
     price: float = db.Column(db.Numeric(precision=5, scale=2))
     quantity: int = db.Column(db.Integer)
-    vending_machine_id: int = db.Column(
-        db.Integer, db.ForeignKey("vending_machine.id"), nullable=False
-    )
+    vending_machine_id: int = db.Column(db.Integer, db.ForeignKey("vending_machine.id"), nullable=False)
