@@ -12,5 +12,5 @@ This is a API for managing vending machines and their products. It provides CRUD
 ## API Endpoints
 
 ### VendingMachine
-POST /vending_machine - Create a new vending machine
+POST /vending_machine - Create a new vending machine\n
 Request body: {"name": "<vending_machine_name>", "location": "<vending_machine_location>"}
