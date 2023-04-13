@@ -2,6 +2,12 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=CodePan1_VendingMachineFlask&metric=coverage)](https://sonarcloud.io/summary/new_code?id=CodePan1_VendingMachineFlask)
 This is a API for managing vending machines and their products. It provides CRUD operations for vending machines, products, and stock timelines.
 
+##Requirement
+```
+poetry install
+poetry run pre-commit install
+```
+
 ## Features
 
 - Manage vending machines (create, read, update, delete)
@@ -30,3 +36,12 @@ Request body: {"id": <product_id>, "name": "<new_product_name>", "price": <new_p
 <br />
 DELETE /product - Delete a product<br />
 Request body: {"id": <product_id>}<br />
+
+### Stock Timeline
+GET /stock_timeline/product/<int:product_id> - Get the stock timeline for a product<br />
+GET /stock_timeline/vending_machine/<int:vending_machine_id> - Get the stock timeline for a vending machine<br />
+
+## Running Tests
+```
+poetry run pytest
+```
