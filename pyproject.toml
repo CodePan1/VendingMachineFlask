@@ -1,24 +1,27 @@
 [tool.poetry]
-name = "vending_machine"
+name = "VendingMachineFlask"
 version = "0.1.0"
 description = ""
-authors = ["The Gang Technology"]
-readme = "README.md"
+authors = ["pan"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-pytest = "^7.2.1"
-pre-commit = "^3.0.1"
-tinydb = "^4.7.1"
-flask = "^2.2.2"
-jsonify = "^0.5"
-python-dotenv = "^0.21.1"
-pytest-cov = "^4.0.0"
+python = ">=3.7,<4.0"
+flask = "^2.2.3"
+flask-sqlalchemy = "^3.0.3"
+
+
+[tool.poetry.dev-dependencies]
+pre-commit = "^2.20.0"
 flake8 = "^5.0.1"
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
 ipykernel = "^6.15.1"
 flake8-annotations = "^2.9.1"
 flake8-eradicate = "^1.4.0"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
