@@ -1,9 +1,7 @@
-from flask import Blueprint
-from flask import current_app as app
-from flask import jsonify, request
-from flask.helpers import make_response
+from flask import Blueprint, jsonify, request
 
 from .api.product_api import create_product, delete_product, update_product
+from .api.stock_timeline_api import get_product_stock_timeline, get_vending_machine_stock_timeline
 from .api.vending_machine_api import create_vending_machine, delete_vending_machine, update_vending_machine
 from .models import Product, VendingMachine
 
@@ -61,29 +59,14 @@ def delete_vending_machine_route():
     return {"status": "Success"}, status_code
 
 
-# Vending machine
-@routes.route("/vending_machine")
-def list_vending_machines():
-    return list_objects(VendingMachine)
+# Stock timeline routes
+@routes.route("/stock_timeline/product/<int:product_id>", methods=["GET"])
+def get_product_stock_timeline_route(product_id):
+    stock_timeline = get_product_stock_timeline(product_id)
+    return jsonify({"stock_timeline": [entry.to_dict() for entry in stock_timeline]}), 200
 
 
-@routes.route("/vending_machine", methods=["POST", "PUT", "DELETE"])
-def modify_vending_machine():
-    required_fields = get_required_fields_for_request(request.method)
-    method_to_function_map = get_method_to_function_map(
-        (create_vending_machine, update_vending_machine, delete_vending_machine)
-    )
-    return modify_object(request.get_json(), required_fields, method_to_function_map)
-
-
-# Product
-@routes.route("/product")
-def list_products():
-    return list_objects(Product)
-
-
-@routes.route("/product", methods=["POST", "PUT", "DELETE"])
-def modify_product():
-    required_fields = get_required_fields_for_request(request.method)
-    method_to_function_map = get_method_to_function_map((create_product, update_product, delete_product))
-    return modify_object(request.get_json(), required_fields, method_to_function_map)
+@routes.route("/stock_timeline/vending_machine/<int:vending_machine_id>", methods=["GET"])
+def get_vending_machine_stock_timeline_route(vending_machine_id):
+    stock_timeline = get_vending_machine_stock_timeline(vending_machine_id)
+    return jsonify({"stock_timeline": [entry.to_dict() for entry in stock_timeline]}), 200

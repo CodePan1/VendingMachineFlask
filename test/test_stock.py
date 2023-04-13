@@ -57,6 +57,7 @@ def test_create_product(test_app, test_vm):
 
 
 def test_update_product(test_app, test_vm):
+    # Test updating the product name only
     new_product_data = {
         "name": "Test Product",
         "price": 1.99,
@@ -71,8 +72,42 @@ def test_update_product(test_app, test_vm):
 
     updated_product_data = {
         "id": new_product.id,
-        "name": "Updated Product",
-        "price": Decimal("2.99"),  # convert to Decimal
+        "name": "Updated Product Name",
+        "price": Decimal("1.99"),
+        "quantity": 10,
+        "vending_machine_id": test_vm.id,
+    }
+    status, status_code = update_product(updated_product_data)
+    assert status_code == 200
+    assert status["status"] == "OK"
+
+    updated_product = db.session.get(Product, new_product.id)
+    assert updated_product.name == "Updated Product Name"
+    assert updated_product.price == Decimal("1.99")
+    assert updated_product.quantity == 10
+
+    # Test updating the product price only
+    updated_product_data = {
+        "id": new_product.id,
+        "name": "Updated Product Name",
+        "price": Decimal("2.99"),
+        "quantity": 10,
+        "vending_machine_id": test_vm.id,
+    }
+    status, status_code = update_product(updated_product_data)
+    assert status_code == 200
+    assert status["status"] == "OK"
+
+    updated_product = db.session.get(Product, new_product.id)
+    assert updated_product.name == "Updated Product Name"
+    assert updated_product.price == Decimal("2.99")
+    assert updated_product.quantity == 10
+
+    # Test updating the product quantity only
+    updated_product_data = {
+        "id": new_product.id,
+        "name": "Updated Product Name",
+        "price": Decimal("2.99"),
         "quantity": 20,
         "vending_machine_id": test_vm.id,
     }
@@ -81,9 +116,31 @@ def test_update_product(test_app, test_vm):
     assert status["status"] == "OK"
 
     updated_product = db.session.get(Product, new_product.id)
-    assert updated_product.name == "Updated Product"
-    assert updated_product.price == Decimal("2.99")  # compare as Decimal
+    assert updated_product.name == "Updated Product Name"
+    assert updated_product.price == Decimal("2.99")
     assert updated_product.quantity == 20
+
+    # Test updating the vending machine ID only
+    new_vm = VendingMachine(location="Test Location 2")
+    db.session.add(new_vm)
+    db.session.commit()
+
+    updated_product_data = {
+        "id": new_product.id,
+        "name": "Updated Product Name",
+        "price": Decimal("2.99"),
+        "quantity": 20,
+        "vending_machine_id": new_vm.id,
+    }
+    status, status_code = update_product(updated_product_data)
+    assert status_code == 200
+    assert status["status"] == "OK"
+
+    updated_product = db.session.get(Product, new_product.id)
+    assert updated_product.name == "Updated Product Name"
+    assert updated_product.price == Decimal("2.99")
+    assert updated_product.quantity == 20
+    assert updated_product.vending_machine_id == new_vm.id
 
     # Test invalid product ID
     updated_product_data["id"] = -1

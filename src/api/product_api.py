@@ -1,4 +1,4 @@
-from ..models import Product, VendingMachine, db
+from ..models import Product, StockTimeline, db
 
 BAD_REQUEST_RESPONSE = {"status": "Bad Request"}, 400
 OK_RESPONSE = {"status": "OK"}, 200
@@ -17,6 +17,11 @@ def create_product(data):
     )
     product = Product(name=name, price=price, quantity=quantity, vending_machine_id=vm_id)
     db.session.add(product)
+    db.session.commit()
+    stock_timeline_entry = StockTimeline(
+        product_id=product.id, vending_machine_id=product.vending_machine_id, quantity=product.quantity
+    )
+    db.session.add(stock_timeline_entry)
     db.session.commit()
     return OK_RESPONSE
 
@@ -40,6 +45,11 @@ def update_product(data):
         product.quantity = quantity
     if vm_id is not None:
         product.vending_machine_id = vm_id
+    db.session.commit()
+    stock_timeline_entry = StockTimeline(
+        product_id=product.id, vending_machine_id=product.vending_machine_id, quantity=product.quantity
+    )
+    db.session.add(stock_timeline_entry)
     db.session.commit()
     return OK_RESPONSE
 
